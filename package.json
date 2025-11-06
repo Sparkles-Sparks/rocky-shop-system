@@ -10,9 +10,11 @@
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install",
-    "docker:build": "docker-compose build",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:ps": "docker compose ps"
   },
   "keywords": ["ecommerce", "shop", "nodejs", "react", "mongodb"],
   "author": "Shop System Developer",

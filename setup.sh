@@ -148,13 +148,26 @@ else
     print_warning "Environment file already exists"
 fi
 
+# Check Docker Compose availability and use appropriate command
+DOCKER_COMPOSE_CMD=""
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    print_error "Docker Compose is not installed. Please install Docker Compose first."
+    exit 1
+fi
+
+print_status "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
+
 # Build Docker images
 print_status "Building Docker images (this may take several minutes)..."
-docker-compose build
+$DOCKER_COMPOSE_CMD build
 
 # Start services
 print_status "Starting all services..."
-docker-compose up -d
+$DOCKER_COMPOSE_CMD up -d
 
 # Wait for services to be ready
 print_status "Waiting for services to initialize..."
@@ -162,7 +175,7 @@ sleep 30
 
 # Check service status
 print_status "Checking service status..."
-docker-compose ps
+$DOCKER_COMPOSE_CMD ps
 
 # Display access information
 print_status "Installation completed successfully!"

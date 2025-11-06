@@ -22,7 +22,7 @@ chmod +x setup.sh
 sudo dnf update -y
 sudo dnf install -y dnf-utils device-mapper-persistent-data lvm2
 sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 sudo systemctl start docker
 sudo systemctl enable docker
 sudo usermod -aG docker $USER
@@ -36,7 +36,7 @@ sudo apt install -y apt-transport-https ca-certificates curl software-properties
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt update -y
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 sudo systemctl start docker
 sudo systemctl enable docker
 sudo usermod -aG docker $USER
@@ -105,18 +105,18 @@ JWT_SECRET=$(openssl rand -base64 32)
 sed -i "s/your-super-secret-jwt-key-change-this-in-production/$JWT_SECRET/" server/.env
 
 # Build and start
-docker-compose build
-docker-compose up -d
+docker compose build
+docker compose up -d
 ```
 
 ### Step 4: Verify Installation
 
 ```bash
 # Check services
-docker-compose ps
+docker compose ps
 
 # Check logs
-docker-compose logs -f
+docker compose logs -f
 
 # Test API
 curl `http://localhost:5001/api/health`
@@ -132,19 +132,19 @@ curl `http://localhost:5001/api/health`
 
 ```bash
 # Stop services
-docker-compose down
+docker compose down
 
 # Start services
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Update
 git pull
-docker-compose down
-docker-compose build
-docker-compose up -d
+docker compose down
+docker compose build
+docker compose up -d
 ```
 
 ## Troubleshooting
@@ -170,10 +170,10 @@ sudo systemctl stop nginx
 
 ```bash
 # Restart MongoDB
-docker-compose restart mongodb
+docker compose restart mongodb
 
 # Check MongoDB logs
-docker-compose logs mongodb
+docker compose logs mongodb
 ```
 
 ## Production Setup
@@ -216,7 +216,7 @@ sudo certbot --nginx -d yourdomain.com
 
 If you encounter issues:
 
-1. Check logs: `docker-compose logs -f`
+1. Check logs: `docker compose logs -f`
 2. Verify Docker is running: `sudo systemctl status docker`
 3. Check ports: `netstat -tulpn`
 4. Review this guide and README.md

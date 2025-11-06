@@ -29,7 +29,7 @@ sudo dnf install -y dnf-utils device-mapper-persistent-data lvm2
 sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 
 # Install Docker
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 
 # Start and enable Docker service
 sudo systemctl start docker
@@ -56,7 +56,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 
 # Update package list and install Docker
 sudo apt update -y
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 
 # Start and enable Docker service
 sudo systemctl start docker
@@ -191,46 +191,47 @@ MONGODB_URI=mongodb://admin:password123@mongodb:27017/shopdb?authSource=admin
 
 ```bash
 # Build all Docker images
-docker-compose build
+docker compose build
 
 # Start all services in detached mode
-docker-compose up -d
+docker compose up -d
 
 # Check the status of all containers
-docker-compose ps
+docker compose ps
 ```
 
 ### Option B: Start Services One by One
 
 ```bash
 # Start MongoDB first
-docker-compose up -d mongodb
+docker compose up -d mongodb
+docker compose up -d mongodb
 
 # Wait for MongoDB to be ready (about 30 seconds)
 sleep 30
 
 # Start the backend server
-docker-compose up -d server
+docker compose up -d server
 
 # Start the frontend
-docker-compose up -d client
+docker compose up -d client
 
 # Start Nginx reverse proxy
-docker-compose up -d nginx
+docker compose up -d nginx
 ```
 
 ## Step 6: Verify Installation
 
 ```bash
 # Check if all containers are running
-docker-compose ps
+docker compose ps
 
 # Check application logs
-docker-compose logs -f
+docker compose logs -f
 
 # Check specific service logs
-docker-compose logs server
-docker-compose logs client
+docker compose logs server
+docker compose logs client
 ```
 
 ## Step 7: Access the Application
@@ -277,19 +278,19 @@ sudo ufw enable
 ### Start the Application
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Stop the Application
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### View Logs
 
 ```bash
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### Update the Application
@@ -298,17 +299,16 @@ docker-compose logs -f
 # Pull latest changes
 git pull origin main
 
-# Rebuild and restart
-docker-compose down
-docker-compose build
-docker-compose up -d
+# Build and start the application
+docker compose build
+docker compose up -d
 ```
 
 ### Backup Database
 
 ```bash
 # Create backup
-docker-compose exec mongodb mongodump --authenticationDatabase admin -u admin -p password123 --db shopdb --out /backup
+docker compose exec mongodb mongodump --authenticationDatabase admin -u admin -p password123 --db shopdb --out /backup
 
 # Copy backup to host
 docker cp rocky-shop-db:/backup ./backup-$(date +%o%m%d)
@@ -321,7 +321,7 @@ docker cp rocky-shop-db:/backup ./backup-$(date +%o%m%d)
 docker cp ./backup-20231201 rocky-shop-db:/backup
 
 # Restore database
-docker-compose exec mongodb mongorestore --authenticationDatabase admin -u admin -p password123 --db shopdb /backup/shopdb
+docker compose exec mongodb mongorestore --authenticationDatabase admin -u admin -p password123 --db shopdb /backup/shopdb
 ```
 
 ## Troubleshooting
@@ -349,28 +349,28 @@ sudo systemctl stop nginx  # or other service
 
 ```bash
 # Check container logs
-docker-compose logs [service-name]
+docker compose logs [service-name]
 
 # Rebuild the container
-docker-compose down
-docker-compose build --no-cache [service-name]
-docker-compose up -d
+docker compose down
+docker compose build --no-cache [service-name]
+docker compose up -d
 ```
 
 1. **Database Connection Failed**
 
 ```bash
 # Check MongoDB container status
-docker-compose ps mongodb
+docker compose ps mongodb
 
 # Restart MongoDB
-docker-compose restart mongodb
+docker compose restart mongodb
 ```
 
 ## Security Considerations
 
 1. **Change Default Passwords**
-   - Update MongoDB password in `docker-compose.yml`
+   - Update MongoDB password in `docker compose.yml`
    - Update JWT secret in `.env` file
    - Change admin password after first login
 
@@ -387,6 +387,6 @@ sudo dnf update -y  # Rocky 9.0
 sudo apt update -y  # Ubuntu 24.04/22.04/20.04
 
 # Update Docker images
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
