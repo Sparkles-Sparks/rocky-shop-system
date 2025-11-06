@@ -344,6 +344,13 @@ docker compose exec mongodb mongorestore --authenticationDatabase admin -u admin
 # Add user to docker group and logout/login
 sudo usermod -aG docker $USER
 # Then logout and login again
+
+# OR use sudo for this session
+sudo docker compose build
+sudo docker compose up -d
+
+# OR activate docker group for current session
+newgrp docker
 ```
 
 1. **Port Already in Use**

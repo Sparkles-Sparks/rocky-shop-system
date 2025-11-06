@@ -102,6 +102,46 @@ sudo systemctl restart docker
 print_status "Adding user to docker group..."
 sudo usermod -aG docker $USER
 
+# Check if user can access Docker without sudo
+print_status "Checking Docker permissions..."
+if ! docker version &> /dev/null; then
+    print_warning "Docker permissions not active. You need to logout and login again for group changes to take effect."
+    print_warning "Alternatively, you can run Docker commands with sudo for this session."
+    echo ""
+    echo "Choose an option:"
+    echo "1) Logout and login (recommended for future use)"
+    echo "2) Continue with sudo for this session"
+    echo "3) Use 'newgrp docker' to activate group for this session"
+    echo ""
+    read -p "Enter your choice (1/2/3): " -n 1 -r
+    echo ""
+    
+    case $REPLY in
+        1)
+            print_status "Please logout and login again, then run this script to continue."
+            exit 0
+            ;;
+        2)
+            print_status "Using sudo for Docker commands in this session..."
+            USE_SUDO_DOCKER=true
+            ;;
+        3)
+            print_status "Activating docker group for this session..."
+            exec newgrp docker << 'EOF'
+                echo "Docker group activated. Please run the setup script again."
+                exit 0
+EOF
+            ;;
+        *)
+            print_error "Invalid choice. Exiting."
+            exit 1
+            ;;
+    esac
+else
+    print_status "Docker permissions are working correctly."
+    USE_SUDO_DOCKER=false
+fi
+
 # Check if project directory exists
 PROJECT_DIR="rocky-shop-system"
 if [ -d "$PROJECT_DIR" ]; then
@@ -203,11 +243,19 @@ print_status "Using Docker Compose command: $DOCKER_COMPOSE_CMD"
 
 # Build Docker images
 print_status "Building Docker images (this may take several minutes)..."
-$DOCKER_COMPOSE_CMD build
+if [ "$USE_SUDO_DOCKER" = true ]; then
+    sudo $DOCKER_COMPOSE_CMD build
+else
+    $DOCKER_COMPOSE_CMD build
+fi
 
 # Start services
 print_status "Starting all services..."
-$DOCKER_COMPOSE_CMD up -d
+if [ "$USE_SUDO_DOCKER" = true ]; then
+    sudo $DOCKER_COMPOSE_CMD up -d
+else
+    $DOCKER_COMPOSE_CMD up -d
+fi
 
 # Wait for services to be ready
 print_status "Waiting for services to initialize..."
@@ -215,7 +263,11 @@ sleep 30
 
 # Check service status
 print_status "Checking service status..."
-$DOCKER_COMPOSE_CMD ps
+if [ "$USE_SUDO_DOCKER" = true ]; then
+    sudo $DOCKER_COMPOSE_CMD ps
+else
+    $DOCKER_COMPOSE_CMD ps
+fi
 
 # Display access information
 print_status "Installation completed successfully!"
