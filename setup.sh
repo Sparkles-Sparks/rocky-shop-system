@@ -141,8 +141,27 @@ if [ ! -f "server/.env" ]; then
     
     # Generate random JWT secret
     JWT_SECRET=$(openssl rand -base64 32)
-    # Use awk to safely replace the JWT secret (handles special characters)
-    awk -v secret="$JWT_SECRET" '{gsub(/your-super-secret-jwt-key-change-this-in-production/, secret)}1' server/.env > server/.env.tmp && mv server/.env.tmp server/.env
+    print_status "Generated JWT secret: ${JWT_SECRET:0:10}..."
+    
+    # Use Python for reliable text replacement (most robust method)
+    if command -v python3 &> /dev/null; then
+        python3 -c "
+import re
+import os
+jwt_secret = os.environ.get('JWT_SECRET')
+with open('server/.env', 'r') as f:
+    content = f.read()
+content = re.sub(r'your-super-secret-jwt-key-change-this-in-production', jwt_secret, content)
+with open('server/.env', 'w') as f:
+    f.write(content)
+"
+    # Use Perl as fallback (handles special characters well)
+    elif command -v perl &> /dev/null; then
+        perl -pi -e "s/your-super-secret-jwt-key-change-this-in-production/\$JWT_SECRET/g" server/.env
+    # Use awk as final fallback
+    else
+        awk -v secret="$JWT_SECRET" '{gsub(/your-super-secret-jwt-key-change-this-in-production/, secret)}1' server/.env > server/.env.tmp && mv server/.env.tmp server/.env
+    fi
     
     print_status "Environment file created with random JWT secret"
 else
