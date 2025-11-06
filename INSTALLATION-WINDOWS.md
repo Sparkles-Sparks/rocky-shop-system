@@ -102,7 +102,7 @@ cp server/.env.example server/.env
 
 # Generate secure JWT secret
 JWT_SECRET=$(openssl rand -base64 32)
-sed -i "s/your-super-secret-jwt-key-change-this-in-production/$JWT_SECRET/" server/.env
+awk -v secret="$JWT_SECRET" '{gsub(/your-super-secret-jwt-key-change-this-in-production/, secret)}1' server/.env > server/.env.tmp && mv server/.env.tmp server/.env
 
 # Build and start
 docker compose build

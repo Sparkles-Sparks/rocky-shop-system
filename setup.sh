@@ -141,7 +141,8 @@ if [ ! -f "server/.env" ]; then
     
     # Generate random JWT secret
     JWT_SECRET=$(openssl rand -base64 32)
-    sed -i "s/your-super-secret-jwt-key-change-this-in-production/$JWT_SECRET/" server/.env
+    # Use awk to safely replace the JWT secret (handles special characters)
+    awk -v secret="$JWT_SECRET" '{gsub(/your-super-secret-jwt-key-change-this-in-production/, secret)}1' server/.env > server/.env.tmp && mv server/.env.tmp server/.env
     
     print_status "Environment file created with random JWT secret"
 else
