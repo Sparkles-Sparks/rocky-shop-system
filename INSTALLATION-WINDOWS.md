@@ -102,7 +102,16 @@ cp server/.env.example server/.env
 
 # Generate secure JWT secret
 JWT_SECRET=$(openssl rand -base64 32)
-awk -v secret="$JWT_SECRET" '{gsub(/your-super-secret-jwt-key-change-this-in-production/, secret)}1' server/.env > server/.env.tmp && mv server/.env.tmp server/.env
+python3 -c "
+import re
+import sys
+jwt_secret = sys.argv[1]
+with open('server/.env', 'r') as f:
+    content = f.read()
+content = re.sub(r'your-super-secret-jwt-key-change-this-in-production', jwt_secret, content)
+with open('server/.env', 'w') as f:
+    f.write(content)
+" "$JWT_SECRET"
 
 # Build and start
 docker compose build

@@ -163,14 +163,18 @@ if [ ! -f "server/.env" ]; then
     if command -v python3 &> /dev/null; then
         python3 -c "
 import re
-import os
-jwt_secret = os.environ.get('JWT_SECRET')
+import sys
+if len(sys.argv) < 2:
+    print('Error: JWT secret not provided')
+    exit(1)
+jwt_secret = sys.argv[1]
 with open('server/.env', 'r') as f:
     content = f.read()
 content = re.sub(r'your-super-secret-jwt-key-change-this-in-production', jwt_secret, content)
 with open('server/.env', 'w') as f:
     f.write(content)
-"
+print('JWT secret updated successfully')
+" "$JWT_SECRET"
     # Use Perl as fallback (handles special characters well)
     elif command -v perl &> /dev/null; then
         perl -pi -e "s/your-super-secret-jwt-key-change-this-in-production/\$JWT_SECRET/g" server/.env
