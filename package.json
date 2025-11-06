@@ -1,0 +1,23 @@
+{
+  "name": "rocky-shop-system",
+  "version": "1.0.0",
+  "description": "Full-featured e-commerce shop system for Rocky 9.0/Ubuntu Linux",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": ["ecommerce", "shop", "nodejs", "react", "mongodb"],
+  "author": "Shop System Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

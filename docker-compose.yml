@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: rocky-shop-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: shopdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: rocky-shop-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/shopdb?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      PORT: 5001
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server/uploads:/app/uploads
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: rocky-shop-client
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:5001
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+  nginx:
+    image: nginx:alpine
+    container_name: rocky-shop-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - client
+      - server
+
+volumes:
+  mongodb_data:
