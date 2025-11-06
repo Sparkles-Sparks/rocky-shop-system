@@ -44,15 +44,22 @@ sudo usermod -aG docker $USER
 ```bash
 # Update system packages
 sudo apt update -y
+sudo apt upgrade -y
 
 # Install required dependencies
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git nano unzip python3 perl openssl
 
-# Add Docker GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# Add Docker GPG key (modern method for Ubuntu 24.04+)
+sudo apt install -y ca-certificates curl gnupg lsb-release
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Add Docker repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Add Docker repository (modern method)
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Update package list and install Docker
 sudo apt update -y
@@ -61,6 +68,9 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
 # Start and enable Docker service
 sudo systemctl start docker
 sudo systemctl enable docker
+
+# Restart Docker to ensure all components are loaded (Ubuntu 24.04 fix)
+sudo systemctl restart docker
 
 # Add your user to docker group (optional but recommended)
 sudo usermod -aG docker $USER

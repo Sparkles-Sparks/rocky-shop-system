@@ -59,7 +59,7 @@ if [[ "$OS" == *"Rocky"* ]] || [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Ha
 elif [[ "$OS" == *"Ubuntu"* ]] || [[ "$OS" == *"Debian"* ]]; then
     sudo apt update -y
     sudo apt upgrade -y
-    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git nano unzip
+    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git nano unzip python3 perl openssl
 else
     print_error "Unsupported operating system"
     exit 1
@@ -71,8 +71,21 @@ if [[ "$OS" == *"Rocky"* ]] || [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Ha
     sudo dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
     sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 elif [[ "$OS" == *"Ubuntu"* ]] || [[ "$OS" == *"Debian"* ]]; then
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    # Updated Docker installation for Ubuntu 24.04+
+    sudo apt update -y
+    sudo apt install -y ca-certificates curl gnupg lsb-release
+    
+    # Add Docker's official GPG key (modern method)
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    
+    # Set up the repository (modern method)
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    
     sudo apt update -y
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 fi
@@ -81,6 +94,9 @@ fi
 print_status "Starting Docker service..."
 sudo systemctl start docker
 sudo systemctl enable docker
+
+# Restart Docker to ensure all components are loaded (Ubuntu 24.04 fix)
+sudo systemctl restart docker
 
 # Add user to docker group
 print_status "Adding user to docker group..."
@@ -109,7 +125,7 @@ if [ ! -d "$PROJECT_DIR" ]; then
     if command -v wget &> /dev/null; then
         print_status "Using wget to download source code (no login required)..."
         mkdir -p "$PROJECT_DIR"
-        wget https://github.com/YOUR_USERNAME/rocky-shop-system/archive/main.zip -O main.zip
+        wget https://github.com/Sparkles-Sparks/rocky-shop-system/archive/main.zip -O main.zip
         unzip main.zip -d .
         mv rocky-shop-system-main/* "$PROJECT_DIR/"
         mv rocky-shop-system-main/.* "$PROJECT_DIR/" 2>/dev/null || true
@@ -117,7 +133,7 @@ if [ ! -d "$PROJECT_DIR" ]; then
     elif command -v curl &> /dev/null; then
         print_status "Using curl to download source code (no login required)..."
         mkdir -p "$PROJECT_DIR"
-        curl -L https://github.com/YOUR_USERNAME/rocky-shop-system/archive/main.zip -o main.zip
+        curl -L https://github.com/Sparkles-Sparks/rocky-shop-system/archive/main.zip -o main.zip
         unzip main.zip -d .
         mv rocky-shop-system-main/* "$PROJECT_DIR/"
         mv rocky-shop-system-main/.* "$PROJECT_DIR/" 2>/dev/null || true
@@ -125,7 +141,7 @@ if [ ! -d "$PROJECT_DIR" ]; then
     elif command -v git &> /dev/null; then
         print_status "Using Git to clone repository..."
         print_warning "Git may require authentication. Consider using wget or curl for anonymous downloads."
-        git clone https://github.com/YOUR_USERNAME/rocky-shop-system.git "$PROJECT_DIR"
+        git clone https://github.com/Sparkles-Sparks/rocky-shop-system.git "$PROJECT_DIR"
     else
         print_error "No download method available. Please install wget, curl, or git"
         exit 1
